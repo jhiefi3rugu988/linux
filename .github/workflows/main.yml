@@ -21,19 +21,4 @@ jobs:
       run: ngrok authtoken 3LsT7i30MjLUONtjZcqVj0MivcW_3KvuHwBfHqs7H3NVFr4zT
 
     - name: Setup RDP & XFCE Desktop
-      run: |
-        sudo apt update
-        sudo apt-y install xrdp xfce4 xfce4-goodies
-        sudo systemctl enable xrdp
-        echo xfce4-session > ~/.xsession
-
-    - name: Set Password for RDP User
-      run: |
-        echo "kali:kali123" | sudo chpasswd
-        sudo sed -i 's/allowed_users=console/allowed_users=anybody/' /etc/X11/Xwrapper.config
-
-    - name: Start Ngrok Tunnel for RDP
-      run: |
-        ngrok tcp 3389 &
-        sleep 5
-        curl --silent http://127.0.0.1:4040/api/tunnels | jq '.tunnels[0].public_url'
+      run
