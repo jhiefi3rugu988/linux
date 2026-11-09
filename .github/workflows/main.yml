@@ -1,0 +1,48 @@
+name: Kali Linux RDP
+
+on: workflow_dispatch
+
+jobs:
+  build:
+  
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkouting Repository
+      uses: actions/checkout@v4
+
+    - name: Download & Setup Ngrok
+      run: |
+        wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
+        unzip ngrok-stable-linux-amd64.zip
+        chmod +x ngrok
+        sudo mv ngrok /usr/local/bin/
+
+    - name: Authenticate Ngrok
+      run: ngrok authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+
+    - name: Setup RDP & XFCE Desktop
+      run: |
+        sudo apt update
+        sudo apt install -y wget curl git
+        sudo apt install -y xfce4 xfce4-goodies
+        sudo apt install -y xrdp
+        sudo systemctl enable xrdp
+        echo "xfce4-session" > ~/.xsession
+        sudo sed -i 's/port=3389/port=3389/g' /etc/xrdp/xrdp.ini
+        sudo /etc/init.d/xrdp start
+
+    - name: Install Kali Linux Tools (Desktop & Core)
+      run: |
+        sudo apt install -y kali-linux-core kali-desktop-xfce || echo "Some packages skipped"
+
+    - name: Set Password for RDP User
+      run: |
+        echo "runner:Password123" | sudo chpasswd
+        echo "RDP User created: runner / Password123"
+
+    - name: Start Ngrok Tunnel for RDP
+      run: |
+        ngrok tcp 3389 &
+        sleep 5
+        curl --silent http://127.0.0.1:4040/api/tunnels | jq '.tunnels[0].public_url'
