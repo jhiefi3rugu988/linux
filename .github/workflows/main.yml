@@ -1,44 +1,36 @@
 name: Kali Linux RDP
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkouting Repository
-      uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
     - name: Download & Setup Ngrok
       run: |
         wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip
         unzip ngrok-stable-linux-amd64.zip
-        chmod +x ngrok
         sudo mv ngrok /usr/local/bin/
 
     - name: Authenticate Ngrok
-      run: ngrok authtoken 32s6oICVYJfeNOcpvuqJDH10Rgn_5gepgwuCk4FVYD2DPc7gA
+      run: ngrok authtoken 3LsT7i30MjLUONtjZcqVj0MivcW_3KvuHwBfHqs7H3NVFr4zT
 
     - name: Setup RDP & XFCE Desktop
       run: |
         sudo apt update
-        sudo apt install -y wget curl git
-        sudo apt install -y xfce4 xfce4-goodies
-        sudo apt install -y xrdp
+        sudo apt-y install xrdp xfce4 xfce4-goodies
         sudo systemctl enable xrdp
-        echo "xfce4-session" > ~/.xsession
-        sudo sed -i 's/port=3389/port=3389/g' /etc/xrdp/xrdp.ini
-        sudo /etc/init.d/xrdp start
-
-    - name: Install Kali Linux Core
-      run: |
-        sudo apt install -y kali-linux-core kali-desktop-xfce || echo "Some packages skipped"
+        echo xfce4-session > ~/.xsession
 
     - name: Set Password for RDP User
       run: |
-        echo "runner:Password123" | sudo chpasswd
-        echo "RDP User created: runner / Password123"
+        echo "kali:kali123" | sudo chpasswd
+        sudo sed -i 's/allowed_users=console/allowed_users=anybody/' /etc/X11/Xwrapper.config
 
     - name: Start Ngrok Tunnel for RDP
       run: |
